@@ -1,6 +1,7 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8,7 +9,10 @@ const PORT = process.env.PORT || 3000;
 // Enable CORS
 app.use(cors());
 
-// Validate URL Middleware
+// Serve the frontend
+app.use(express.static('public'));
+
+// Proxy Middleware
 app.use('/proxy', (req, res, next) => {
     try {
         if (!req.query.url) throw new Error('Missing "url" query parameter');
@@ -20,7 +24,7 @@ app.use('/proxy', (req, res, next) => {
     }
 });
 
-// Proxy Middleware
+// Create proxy middleware
 app.use('/proxy', createProxyMiddleware({
     target: 'http://localhost',
     changeOrigin: true,
@@ -28,12 +32,7 @@ app.use('/proxy', createProxyMiddleware({
     pathRewrite: (path, req) => req.targetUrl.pathname + req.targetUrl.search
 }));
 
-// Home Page
-app.get('/', (req, res) => {
-    res.send(`<h1>GitHub Proxy Running!</h1>`);
-});
-
 // Start Server
 app.listen(PORT, () => {
-    console.log(`🚀 Proxy running at http://localhost:${PORT}`);
+    console.log(`🚀 Proxy & Frontend running at http://localhost:${PORT}`);
 });
